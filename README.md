@@ -60,7 +60,7 @@
 
 Пример запроса к API:
 
-    ``   http://localhost:3000/steam-widget?steamid=76561197960435530D   ``
+    ``  http://localhost:3000/steam-widget?steamid=76561197960435530D  ``
 
 ## Деплой на Vercel
 
@@ -82,6 +82,12 @@
 [https://steam-readme-stats-ifmfprcd4-nervans-projects.vercel.app/steam-widget?steamid=76561198801977286](https://steam-readme-stats-ifmfprcd4-nervans-projects.vercel.app/steam-widget?steamid=76561198801977286)
 
 **Обратите внимание:** Замените `76561198801977286` на свой собственный Steam ID, чтобы получить информацию о вашем профиле.
+
+### Как это выглядит
+
+<p align="center">
+  <img src="https://steam-readme-stats-taupe.vercel.app/steam-widget?steamid=76561198801977286" alt="Steam Widget">
+</p>
 
 ## Как найти свой Steam ID
 
