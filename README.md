@@ -1,31 +1,92 @@
-# Steam Readme Stats
+# Steam Widget
 
-This project provides a custom widget to display various Steam user statistics including:
+Этот проект представляет собой веб-приложение для создания и отображения пользовательских виджетов Steam, которые показывают информацию о Steam-профиле, включая аватарку, уровень, количество игр, друзей и последнюю сыгранную игру.
 
-- Steam Level
-- Number of Owned Games
-- Number of Friends
-- Last Played Game
+## Описание
 
-## How to Use
+Приложение использует Steam Web API для извлечения данных о пользователе и отображает эти данные в формате SVG. Виджет включает в себя:
 
-You can use the Steam widget by visiting the following URL and passing a Steam ID as a query parameter:
+- Аватарка пользователя
+- Имя пользователя
+- Уровень Steam
+- Количество игр
+- Количество друзей
+- Последнюю сыгранную игру
+- Индикатор статуса (онлайн, не беспокоить, в сети, оффлайн)
 
-[Steam Widget Example](https://steam-readme-stats-j8j843eho-nervans-projects.vercel.app/steam-widget?steamid=76561198006409530)
+## Установка
 
-Replace `76561198006409530` with the Steam ID you want to display.
+1. **Клонируйте репозиторий:**
 
-## Deployment
+    ```bash
+    git clone https://github.com/ваш-репозиторий/steam-widget.git
+    cd steam-widget
+    ```
 
-This project is deployed on Vercel. You can view the live project at:
+2. **Установите зависимости:**
 
-[https://steam-readme-stats-j8j843eho-nervans-projects.vercel.app](https://steam-readme-stats-j8j843eho-nervans-projects.vercel.app)
+    Убедитесь, что у вас установлен Node.js и npm. Затем выполните:
 
-## Development
+    ```bash
+    npm install
+    ```
 
-To run this project locally, follow these steps:
+3. **Создайте файл `.env`:**
 
-1. Clone the repository:
-   ```sh
-   git clone <repository-url>
+    В корневой директории проекта создайте файл `.env` и добавьте свой Steam API ключ:
+
+    ```
+    STEAM_API_KEY=ваш_steam_api_ключ
+    ```
+
+## Запуск приложения
+
+1. **Запустите сервер:**
+
+    ```bash
+    npm start
+    ```
+
+    Сервер будет запущен на порту 3000 по умолчанию. Вы можете изменить порт, установив переменную окружения `PORT`.
+
+2. **Используйте виджет:**
+
+    Откройте браузер и перейдите по адресу:
+
+    ```
+    http://localhost:3000/steam-widget?steamid=ВашSteamID
+    ```
+
+    Замените `ВашSteamID` на Steam ID пользователя, информацию о котором вы хотите получить.
+
+## Примеры использования
+
+Пример запроса к API:
    ```
+   http://localhost:3000/steam-widget?steamid=76561197960435530
+   ```
+
+
+## Деплой на Vercel
+
+1. **Создайте новый проект на [Vercel](https://vercel.com/):**
+
+    - Перейдите на сайт Vercel и создайте новый проект.
+    - Импортируйте ваш репозиторий.
+
+2. **Настройте переменные окружения:**
+
+    В панели управления проектом на Vercel перейдите в раздел "Настройки" и добавьте переменную окружения `STEAM_API_KEY` с вашим ключом.
+
+3. **Разверните проект:**
+
+    Нажмите на кнопку "Deploy" в Vercel, чтобы развернуть ваше приложение.
+
+## Примечания
+
+- **Индикатор статуса**: Статус пользователя (онлайн, не беспокоить, в сети, оффлайн) отображается в правом нижнем углу аватарки. Цвет индикатора изменяется в зависимости от статуса.
+
+- **Проблемы с CORS**: Если у вас возникают проблемы с CORS, убедитесь, что вы правильно настроили заголовки CORS на сервере и что ваш API ключ действителен.
+
+
+Спасибо за использование нашего проекта!
