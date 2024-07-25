@@ -1,13 +1,19 @@
-require('dotenv').config(); 
+require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
 
 const STEAM_API_KEY = process.env.STEAM_API_KEY;
 
-app.use(cors());
+app.use(cors({
+    origin: '*', 
+}));
+
+const templatePath = path.join(__dirname, 'widgetTemplate.svg');
 
 async function getPlayerData(steamId) {
     const url = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/`;
@@ -16,7 +22,6 @@ async function getPlayerData(steamId) {
         steamids: steamId
     };
     const response = await axios.get(url, { params });
-    console.log(response.data);
     return response.data.response.players[0];
 }
 
@@ -61,6 +66,54 @@ async function getRecentlyPlayedGames(steamId) {
     return games.length > 0 ? games[0] : null;
 }
 
+async function getUserStatus(steamId) {
+    const url = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/`;
+    const params = {
+        key: STEAM_API_KEY,
+        steamids: steamId
+    };
+    const response = await axios.get(url, { params });
+    const player = response.data.response.players[0];
+    return player.personastate;
+}
+
+async function getBase64Image(url) {
+    const response = await axios.get(url, { responseType: 'arraybuffer' });
+    return `data:image/png;base64,${Buffer.from(response.data, 'binary').toString('base64')}`;
+}
+
+async function generateWidgetSvg(player, level, games, friendCount, recentGame, status) {
+    const template = fs.readFileSync(templatePath, 'utf8');
+    const avatarUrl = await getBase64Image(player.avatarfull);
+    const playerName = player.personaname;
+    const steamLevel = level;
+    const gamesCount = games.length;
+    const friendsCount = friendCount;
+    const lastPlayedGame = recentGame ? recentGame.name : 'N/A';
+
+    let statusColor = '#808080'; // Серый (Offline) по умолчанию
+    switch (status) {
+        case 1:
+            statusColor = '#00FF00'; // Зеленый (Online)
+            break;
+        case 2:
+            statusColor = '#FF0000'; // Красный (Do Not Disturb)
+            break;
+        case 3:
+            statusColor = '#0000FF'; // Синий (Away)
+            break;
+    }
+
+    return template
+        .replace('{avatarUrl}', avatarUrl)
+        .replace('{playerName}', playerName)
+        .replace('{steamLevel}', steamLevel)
+        .replace('{gamesCount}', gamesCount)
+        .replace('{friendsCount}', friendsCount)
+        .replace('{lastPlayedGame}', lastPlayedGame)
+        .replace('{statusColor}', statusColor);
+}
+
 app.get('/steam-widget', async (req, res) => {
     const steamId = req.query.steamid;
 
@@ -74,54 +127,12 @@ app.get('/steam-widget', async (req, res) => {
         const games = await getOwnedGames(steamId);
         const friendCount = await getFriendList(steamId);
         const recentGame = await getRecentlyPlayedGames(steamId);
+        const status = await getUserStatus(steamId);
 
-        const widgetHtml = `
-            <html>
-                <head>
-                    <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            text-align: center;
-                        }
-                        .widget {
-                            border: 1px solid #ddd;
-                            border-radius: 5px;
-                            padding: 20px;
-                            display: inline-block;
-                            background: #f5f5f5;
-                        }
-                        .avatar {
-                            border-radius: 50%;
-                            width: 100px;
-                            height: 100px;
-                        }
-                        .name {
-                            font-size: 18px;
-                            font-weight: bold;
-                        }
-                        .info {
-                            font-size: 16px;
-                            color: #555;
-                        }
-                        .info span {
-                            font-weight: bold;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="widget">
-                        <img src="${player.avatarfull}" class="avatar" alt="${player.personaname}">
-                        <div class="name">${player.personaname}</div>
-                        <div class="info"><span>Steam Level:</span> ${level}</div>
-                        <div class="info"><span>Games:</span> ${games.length}</div>
-                        <div class="info"><span>Friends:</span> ${friendCount}</div>
-                        <div class="info"><span>Last Played Game:</span> ${recentGame ? recentGame.name : 'N/A'}</div>
-                    </div>
-                </body>
-            </html>
-        `;
+        const widgetSvg = await generateWidgetSvg(player, level, games, friendCount, recentGame, status);
 
-        res.send(widgetHtml);
+        res.set('Content-Type', 'image/svg+xml');
+        res.send(widgetSvg);
     } catch (error) {
         console.error('Error fetching Steam data:', error);
         res.status(500).send('Internal Server Error');
