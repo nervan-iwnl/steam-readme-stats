@@ -60,7 +60,7 @@
 
 Пример запроса к API:
 
-    ``  http://localhost:3000/steam-widget?steamid=76561197960435530D  ``
+    ``  http://localhost:3000/steam-widget?steamid=76561197960435530  ``
 
 ## Деплой на Vercel
 
