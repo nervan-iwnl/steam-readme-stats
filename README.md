@@ -113,7 +113,7 @@ http://localhost:3000/steam-widget?steamid=76561198801977286&title=Gigachad
 
 ---
 
-## Пример для профиля (то, что люди будут копировать)
+## Пример для профиля 
 
 ```markdown
 <p align="center">
@@ -126,6 +126,22 @@ http://localhost:3000/steam-widget?steamid=76561198801977286&title=Gigachad
 ```markdown
 ![Steam](https://your-vercel-app.vercel.app/steam-widget?steamid=nervan_lfy)
 ```
+
+---
+
+## Пример как выглядит
+
+**1. Дефолтная версия**
+
+<p align="center">
+  <img src="https://steam-readme-stats-taupe.vercel.app/steam-widget?steamid=76561198801977286&lang=en" alt="Steam Widget">
+</p>
+
+**2. Русская, светлая версия**
+
+<p align="center">
+  <img src="https://steam-readme-stats-taupe.vercel.app/steam-widget?steamid=76561198801977286&lang=ru&theme=light&" alt="Steam Widget">
+</p>
 
 ---
 
