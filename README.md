@@ -1,3 +1,5 @@
+<<<<<<< HEAD
+
 # Steam Readme Stats (Steam Widget)
 
 Сервис для генерации **SVG-виджета** по Steam-профилю. Используется для вставки в GitHub README, документацию или любую страницу, которая умеет показывать картинки по URL.
@@ -26,8 +28,39 @@
 
 - Node.js >= 18
 - npm или pnpm
-- действующий **Steam Web API Key**  
+- действующий **Steam Web API Key**
   Получить: https://steamcommunity.com/dev/apikey
+  =======
+
+# Steam Readme Stats / Steam Widget
+
+Сервис для генерации **SVG-виджета по данным Steam**. Виджет рендерится на сервере: мы сами ходим в Steam Web API, собираем профиль и статистику, встраиваем аватар в base64 и отдаём готовую картинку по URL. Это сделано так, чтобы виджет корректно показывался в GitHub README и не зависел от браузера пользователя.
+
+---
+
+## Что умеет
+
+- принимает **SteamID64**, **vanity-ник** (`nervan_lfy`) **или ссылку на профиль**(`https://steamcommunity.com/id/...`, `https://steamcommunity.com/profiles/...`)
+- вытягивает:
+  - аватар (inline, без внешнего запроса на стороне GitHub)
+  - имя профиля
+  - уровень Steam
+  - количество игр
+  - количество друзей
+  - последнюю сыгранную игру (с переносом по длине и расширением виджета)
+  - статус (online / offline / away)
+- поддерживает `?lang=ru|en`
+- поддерживает темы: `?theme=dark` (по умолчанию) и `?theme=light` (с отдельной палитрой)
+- отдаёт **валидный SVG** даже если Steam API временно не отвечает
+- кэширует ответы на ~10 минут в памяти
+
+>>>>>>> 018bffa (Remake light theme, add parsing with profile links and vanity links, upd readme)
+>>>>>>>
+>>>>>>
+>>>>>
+>>>>
+>>>
+>>
 
 ---
 
@@ -39,14 +72,27 @@ cd steam-readme-stats
 npm install
 ```
 
+<<<<<<< HEAD
 Создай `.env` в корне:
+============================
+
+Создайте файл `.env`:
+
+>>>>>>> 018bffa (Remake light theme, add parsing with profile links and vanity links, upd readme)
+>>>>>>>
+>>>>>>
+>>>>>
+>>>>
+>>>
+>>
 
 ```env
 STEAM_API_KEY=your_steam_api_key
 PORT=3000
 ```
 
----
+<<<<<<< HEAD
+------------
 
 ## Запуск
 
@@ -74,13 +120,13 @@ GET /steam-widget
 
 ### Query-параметры
 
-| Параметр  | Обязат. | Описание |
-|-----------|---------|----------|
-| `steamid` | да*     | SteamID64 профиля. Если не передан — вернётся валидный SVG с заглушками. |
-| `lang`    | нет     | `ru` или `en` (по умолчанию `en`). Меняет подписи (`Games`, `Friends`, ...). |
-| `theme`   | нет     | `dark` (по умолчанию) или `light`. |
-| `title`   | нет     | Переопределяет имя из Steam. Полезно, если в Steam ник грязный. |
-| `width`   | нет     | Принудительная ширина SVG. Если не задана — виджет сам растянется под ник / игру. |
+| Параметр | Обязат. | Описание                                                                                                                                |
+| ---------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `steamid`      | да*         | SteamID64 профиля. Если не передан — вернётся валидный SVG с заглушками.                        |
+| `lang`         | нет        | `ru` или `en` (по умолчанию `en`). Меняет подписи (`Games`, `Friends`, ...).                               |
+| `theme`        | нет        | `dark` (по умолчанию) или `light`.                                                                                            |
+| `title`        | нет        | Переопределяет имя из Steam. Полезно, если в Steam ник грязный.                                        |
+| `width`        | нет        | Принудительная ширина SVG. Если не задана — виджет сам растянется под ник / игру. |
 
 \* — если `steamid` не указан, сервис всё равно вернёт SVG, чтобы Markdown не ломался.
 
@@ -100,7 +146,7 @@ http://localhost:3000/steam-widget?steamid=76561198801977286&title=GIGACHAD&widt
 ![Steam](https://<your-vercel-app>.vercel.app/steam-widget?steamid=76561198801977286&lang=ru&theme=dark)
 ```
 
-**Почему это работает:**  
+**Почему это работает:**
 при рендере мы скачиваем аватар сами и встраиваем его в SVG в base64, а при ошибках подставляем свою svg-заглушку. GitHub не видит там внешних `<image href="https://...">` → не блокирует.
 
 Если GitHub сильно кеширует — добавь бесполезный параметр:
@@ -116,10 +162,121 @@ http://localhost:3000/steam-widget?steamid=76561198801977286&title=GIGACHAD&widt
 1. Залей репозиторий на GitHub.
 2. Создай проект на https://vercel.com/
 3. При импорте репозитория укажи переменную окружения:
+   =======
+   `STEAM_API_KEY` берётся тут: https://steamcommunity.com/dev/apikey
 
-   ```text
+---
+
+## Запуск
+
+```bash
+npm start
+```
+
+Сервис поднимется на `http://localhost:3000`.
+
+Проверочный эндпоинт:
+
+```text
+http://localhost:3000/steam-widget/test
+```
+
+он не ходит в Steam и нужен только для просмотра макета.
+
+---
+
+## Основной эндпоинт
+
+```text
+GET /steam-widget
+```
+
+### Параметры
+
+| Параметр                   | Описание                                                                                                      |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `steamid` / `id` / `profile` | Любая форма идентификатора: ID64, vanity или полная ссылка на профиль |
+| `lang`                           | `ru` или `en` (по умолчанию `en`)                                                                 |
+| `theme`                          | `dark` (по умолчанию) или `light`                                                                   |
+| `title`                          | Принудительное отображаемое имя вместо того, что лежит в Steam        |
+| `width`                          | Принудительная ширина SVG                                                                         |
+
+Если идентификатор не распознан — вернётся рабочий SVG с заглушкой (`Profile not found`), а не 500.
+
+---
+
+## Примеры
+
+**1. По чистому SteamID64:**
+
+```text
+http://localhost:3000/steam-widget?steamid=76561198801977286
+```
+
+**2. По vanity:**
+
+```text
+http://localhost:3000/steam-widget?steamid=nervan_lfy
+```
+
+**3. По ссылке на профиль:**
+
+```text
+http://localhost:3000/steam-widget?steamid=https://steamcommunity.com/id/nervan_lfy/
+```
+
+**4. Русская локаль + светлая тема:**
+
+```text
+http://localhost:3000/steam-widget?steamid=76561198801977286&lang=ru&theme=light
+```
+
+**5. Кастомный заголовок:**
+
+```text
+http://localhost:3000/steam-widget?steamid=76561198801977286&title=Gigachad
+```
+
+---
+
+## Пример как выглядит
+
+**1. Дефолтная версия**
+
+<p align="center">
+  <img src="https://steam-readme-stats-taupe.vercel.app/steam-widget?steamid=76561198801977286&lang=en" alt="Steam Widget">
+</p>
+
+**2. Русская, светлая версия**
+
+<p align="center">
+  <img src="https://steam-readme-stats-taupe.vercel.app/steam-widget?steamid=76561198801977286&lang=ru&theme=light&" alt="Steam Widget">
+</p>
+
+**3. Заглушка**
+
+<p align="center">
+  <img src="https://steam-readme-stats-taupe.vercel.app/steam-widget/test" alt="Steam Widget">
+</p>
+
+## Деплой на Vercel
+
+1. Импортируйте репозиторий.
+2. В настройках проекта добавьте переменную окружения:
+
+>>>>>>> 018bffa (Remake light theme, add parsing with profile links and vanity links, upd readme)
+>>>>>>>
+>>>>>>
+>>>>>
+>>>>
+>>>
+>>
+
+```text
    STEAM_API_KEY=your_steam_api_key
-   ```
+```
+
+<<<<<<< HEAD
 
 4. Задеплой.
 
@@ -158,5 +315,47 @@ https://<your-vercel-app>.vercel.app/steam-widget?steamid=...
 - виджет старается не 500-ить: в маршруте логируем ошибку, но всё равно отдаём картинку
 - кэш в памяти живёт, пока живёт инстанс (для README этого хватает)
 - ширина может увеличиваться по двум причинам: длинный ник или длинное название игры
+
+---
+
+=======
+3. Нажмите Deploy.
+
+После этого конечная точка будет доступна по:
+
+```text
+https://<project>.vercel.app/steam-widget?steamid=...
+```
+
+---
+
+## Структура проекта
+
+```text
+.
+├── server.js                  # запуск express
+├── src
+│   ├── routes
+│   │   └── widgetRoute.js     # HTTP-эндпоинты
+│   ├── services
+│   │   └── steamService.js    # вызовы Steam API, кэш, resolve vanity/url → id64, avatar inline
+│   └── render
+│       ├── renderTemplate.js  # подстановка данных в SVG, темы
+│       ├── svgText.js         # расчёт ширины, переносы строк
+│       └── strings.js         # ru/en
+└── templates
+    └── widgetTemplate.svg     # базовый шаблон
+```
+
+---
+
+## Заметки
+
+- GitHub любит кешировать картинки. Если хотите всегда свежую версию — добавляйте мусорный параметр:
+  ```markdown
+  ![Steam](https://.../steam-widget?steamid=nervan_lfy&ts=1730400000)
+  ```
+- В светлой теме цвета подбираются под светлый фон (`#f3f4f6`), в тёмной — под `#141321`.
+- Если Vercel начнёт спать, GitHub может показать старую версию — это норм для динамических SVG.
 
 ---

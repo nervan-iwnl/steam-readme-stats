@@ -115,9 +115,24 @@ function renderTemplate({
   svg = svg.replace(/viewBox="0 0 \d+ \d+"/, `viewBox="0 0 ${finalW} ${finalH}"`);
 
   if (theme === 'light') {
-    svg = svg.replace('#141321', '#ffffff');
-    svg = svg.replace('#e4e2e2', '#d0d0d0');
+    // bg + border
+    svg = svg.replace('#141321', '#f3f4f6');
+    svg = svg.replace('#e4e2e2', '#e5e7eb');
+
+    // name
+    svg = svg.replace('#fe428e', '#db2777');
+
+    // keys ("Steam Level:", "Games:")
+    svg = svg.replace(/#f1fa8c/g, '#2563eb');
+
+    // values (numbers, game name)
+    svg = svg.replace(/#8be9fd/g, '#0f766e');
+
+    // base text
+    svg = svg.replace(/#e4e2e2/g, '#111827');
   }
+
+
 
   svg = svg.replace(/{avatarUrl}/g, escapeXml(avatarUrl));
   svg = svg.replace(/{playerName}/g, escapeXml(playerName));
