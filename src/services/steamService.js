@@ -3,7 +3,7 @@ const axios = require('axios');
 
 const STEAM_KEY = process.env.STEAM_API_KEY;
 
-const CACHE_TTL_MS = 10 * 60 * 1000;
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 min
 const cache = new Map();
 
 const STATUS_COLORS = {
@@ -12,6 +12,10 @@ const STATUS_COLORS = {
   away: '#f1fa8c',
 };
 
+const FALLBACK_AVATAR =
+  'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjE0IiBmaWxsPSIjMTQxMzIxIi8+PHBhdGggZmlsbD0iIzhiZTlmZCIgZD0iTTUwIDI4YzMuMyAwIDYgMi43IDYgNnMtMi43IDYtNiA2LTYtMi43LTYtNiAyLjctNiA2LTZ6bTAgMjFjLTkuMSAwLTE3IDUuMi0yMCAxMi43LS4zLjcuMiAxLjMgMSAxLjNoMzguYy44IDAgMS4zLS42IDEuLTEuM0M2NyA1NC4yIDU5LjEgNDkgNTAgNDl6Ii8+PC9zdmc+';
+
+// ---- cache helpers ----
 function getFromCache(steamid) {
   const hit = cache.get(steamid);
   if (!hit) return null;
@@ -26,6 +30,7 @@ function saveToCache(steamid, data) {
   cache.set(steamid, { ts: Date.now(), data });
 }
 
+// ---- steam calls ----
 async function getPlayerSummary(steamid) {
   const url = 'https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/';
   const resp = await axios.get(url, {
@@ -48,7 +53,7 @@ async function getSteamLevel(steamid) {
       },
     });
     return resp.data?.response?.player_level ?? null;
-  } catch (e) {
+  } catch {
     return null;
   }
 }
@@ -103,6 +108,19 @@ async function getRecentlyPlayed(steamid) {
   }
 }
 
+async function fetchAvatarAsDataUrl(url) {
+  if (!url) return FALLBACK_AVATAR;
+  if (!/^https?:\/\//i.test(url)) return FALLBACK_AVATAR;
+
+  try {
+    const resp = await axios.get(url, { responseType: 'arraybuffer' });
+    const b64 = Buffer.from(resp.data).toString('base64');
+    return `data:image/jpeg;base64,${b64}`;
+  } catch {
+    return FALLBACK_AVATAR;
+  }
+}
+
 function mapStatusColor(personaState) {
   if (personaState === 0) return { color: STATUS_COLORS.offline, kind: 'offline' };
   if (personaState === 1) return { color: STATUS_COLORS.online, kind: 'online' };
@@ -115,17 +133,20 @@ async function getSteamData(steamid) {
 
   const summary = await getPlayerSummary(steamid);
 
-  const [level, gamesCount, friendsCount, lastPlayedGame] = await Promise.all([
+  const avatarPromise = fetchAvatarAsDataUrl(summary?.avatarfull || '');
+
+  const [level, gamesCount, friendsCount, lastPlayedGame, avatarDataUrl] = await Promise.all([
     getSteamLevel(steamid),
     getOwnedGames(steamid),
     getFriendCount(steamid),
     getRecentlyPlayed(steamid),
+    avatarPromise,
   ]);
 
   const status = mapStatusColor(summary?.personastate ?? 0);
 
   const data = {
-    avatarUrl: summary?.avatarfull || '',
+    avatarUrl: avatarDataUrl,
     playerName: summary?.personaname || 'Steam User',
     steamLevel: level !== null ? level : '—',
     gamesCount,
